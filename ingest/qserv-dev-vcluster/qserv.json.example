@@ -1,0 +1,6 @@
+{
+  "instance-id":    "slac6dev",
+  "repl-contr-url": "http://qserv-repl-0.qserv-repls.qserv-dev.svc.cluster.local:25081",
+  "auth-key":       "",
+  "admin-auth-key": ""
+}

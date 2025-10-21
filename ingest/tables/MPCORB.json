@@ -1,0 +1,20 @@
+{
+ "version": 12,
+ "database":"dp1",
+ "table":"MPCORB",
+ "is_partitioned":0,
+ "description":"The regular non-partitioned table",
+ "schema":[
+  {"name":"mpcDesignation","type":"CHAR(13)"},
+  {"name":"q","type":"DOUBLE"},
+  {"name":"e","type":"DOUBLE"},
+  {"name":"incl","type":"DOUBLE"},
+  {"name":"node","type":"DOUBLE"},
+  {"name":"peri","type":"DOUBLE"},
+  {"name":"t_p","type":"DOUBLE"},
+  {"name":"epoch","type":"DOUBLE"},
+  {"name":"ssObjectId","type":"BIGINT"},
+  {"name":"mpcH","type":"DOUBLE"}
+ ],
+ "auth_key":""
+}

@@ -1,0 +1,10 @@
+# Fix the MySQL grants at workers by applying:
+#
+# GRANT ALL PRIVILEGES ON dp1.* TO  'qsmaster'@127.0.0.1; FLUSH PRIVILEGES; EXIT;
+
+cd /zfspool/management/qserv-slac/instance/slac6prod
+for host in $(cat config/workers); do
+  echo $host;
+  ssh $host "mysql -h127.0.0.1 -P3366 -uroot -p***** mysql -e 'GRANT ALL PRIVILEGES ON dp1.* TO  qsmaster@127.0.0.1; FLUSH PRIVILEGES'";
+done
+

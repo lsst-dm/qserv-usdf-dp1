@@ -1,0 +1,33 @@
+{
+ "version": 12,
+ "database":"dp1",
+ "table":"SSSource",
+ "is_partitioned":0,
+ "description":"The regular non-partitioned table for Solar System sources",
+ "schema":[
+  {"name":"phaseAngle","type":"DOUBLE"},
+  {"name":"heliocentricDist","type":"DOUBLE"},
+  {"name":"topocentricDist","type":"DOUBLE"},
+  {"name":"heliocentricX","type":"DOUBLE"},
+  {"name":"heliocentricY","type":"DOUBLE"},
+  {"name":"heliocentricZ","type":"DOUBLE"},
+  {"name":"heliocentricVX","type":"DOUBLE"},
+  {"name":"heliocentricVY","type":"DOUBLE"},
+  {"name":"heliocentricVZ","type":"DOUBLE"},
+  {"name":"topocentricX","type":"DOUBLE"},
+  {"name":"topocentricY","type":"DOUBLE"},
+  {"name":"topocentricZ","type":"DOUBLE"},
+  {"name":"topocentricVX","type":"DOUBLE"},
+  {"name":"topocentricVY","type":"DOUBLE"},
+  {"name":"topocentricVZ","type":"DOUBLE"},
+  {"name":"ssObjectId","type":"BIGINT NOT NULL"},
+  {"name":"residualRa","type":"DOUBLE"},
+  {"name":"residualDec","type":"DOUBLE"},
+  {"name":"diaSourceId","type":"BIGINT"},
+  {"name":"galacticL","type":"DOUBLE"},
+  {"name":"galacticB","type":"DOUBLE"},
+  {"name":"eclipticLambda","type":"DOUBLE"},
+  {"name":"eclipticBeta","type":"DOUBLE"}
+ ],
+ "auth_key":""
+}

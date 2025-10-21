@@ -1,0 +1,13 @@
+{
+ "version": 12,
+ "database":"dp1",
+ "table":"SSObject",
+ "is_partitioned":0,
+ "description":"The regular non-partitioned table for Solar System objects",
+ "schema":[
+  {"name":"ssObjectId","type":"BIGINT NOT NULL"},
+  {"name":"numObs","type":"BIGINT"},
+  {"name":"discoverySubmissionDate","type":"DOUBLE"}
+ ],
+ "auth_key":""
+}

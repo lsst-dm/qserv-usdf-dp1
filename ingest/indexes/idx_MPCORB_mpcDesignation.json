@@ -1,0 +1,14 @@
+{
+    "database": "dp1",
+    "table": "MPCORB",
+    "index": "idx_mpcDesignation",
+    "comment": "The non-unique index on mpcDesignation",
+    "columns": [
+        {
+            "column": "mpcDesignation",
+            "length": 13,
+            "ascending": 1
+        }
+    ],
+    "admin_auth_key":""
+}

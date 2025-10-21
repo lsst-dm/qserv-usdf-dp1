@@ -1,0 +1,19 @@
+{
+    "database": "dp1",
+    "table": "CcdVisit",
+    "index": "idx_visitId_detector",
+    "comment": "The non-unique composite index on the visit identifier (the FK for entries in the table Visit) and detector",
+    "columns": [
+        {
+            "column": "visitId",
+            "length": 0,
+            "ascending": 1
+        },
+	{
+            "column": "detector",
+            "length": 0,
+            "ascending": 1
+        }
+    ],
+    "admin_auth_key":""
+}
