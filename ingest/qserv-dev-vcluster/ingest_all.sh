@@ -32,7 +32,7 @@ fi
 
  
 APP=register-table
-for TABLE in Object Source ForcedSource DiaObject DiaSource ForcedSourceOnDiaObject SSObject SSSource Visit CcdVisit ObsCore CoaddPatches MPCORB; do
+for TABLE in Object Source ForcedSource DiaObject DiaSource ForcedSourceOnDiaObject SSObject SSSource Visit CcdVisit CoaddPatches MPCORB; do
   LOG=${LOG_DIR}/${APP}-${TABLE}.log;
   echo "Register table ${TABLE} -> ${LOG}";
   ../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} ../tables/${TABLE}.json >& ${LOG};
@@ -147,17 +147,6 @@ if [ $? -ne 0 ] ; then
 fi
 
 APP=async-contrib-table
-TABLE=ObsCore
-URL=$(cat ../data/${TABLE}.urls)
-LOG=${LOG_DIR}/${APP}-${TABLE}.log
-echo "Ingest table contributions into ${TABLE} -> ${LOG}"
-../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} --fields-terminated-by=',' --fields-enclosed-by='"' ${VERBOSE_OPT} ${DEBUG_OPT} --url=${URL} >& ${LOG}
-if [ $? -ne 0 ] ; then
-  echo FAILED;
-  exit 1;
-fi
-
-APP=async-contrib-table
 TABLE=CoaddPatches
 URL=$(cat ../data/${TABLE}.urls)
 LOG=${LOG_DIR}/${APP}-${TABLE}.log
@@ -200,7 +189,7 @@ for TABLE in Object Source DiaObject; do
 done
 
 APP=create-table-index
-for TABLE in Object Source ForcedSource DiaObject DiaSource ForcedSourceOnDiaObject SSObject SSSource Visit CcdVisit ObsCore CoaddPatches MPCORB; do
+for TABLE in Object Source ForcedSource DiaObject DiaSource ForcedSourceOnDiaObject SSObject SSSource Visit CcdVisit CoaddPatches MPCORB; do
   for idx in $(ls ../indexes/ | grep "_${TABLE}_" | grep json); do
     LOG=${LOG_DIR}/${APP}-${idx::-5}.log;
     echo "Create table index ${idx::-5} -> ${LOG}";
@@ -213,7 +202,7 @@ for TABLE in Object Source ForcedSource DiaObject DiaSource ForcedSourceOnDiaObj
 done
 
 APP=rebuild-row-counters
-for TABLE in Object Source ForcedSource DiaObject DiaSource ForcedSourceOnDiaObject SSObject SSSource Visit CcdVisit ObsCore CoaddPatches MPCORB; do
+for TABLE in Object Source ForcedSource DiaObject DiaSource ForcedSourceOnDiaObject SSObject SSSource Visit CcdVisit CoaddPatches MPCORB; do
   LOG=${LOG_DIR}/${APP}-${TABLE}.log;
   echo "Build row counter stats on ${TABLE} -> ${LOG}";
   ../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} >& ${LOG};
