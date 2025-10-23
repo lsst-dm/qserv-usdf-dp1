@@ -41,7 +41,7 @@ After that, start the ingest workflow for ``dp1`` by:
 ```
 Normally, it would take about 30 minutes before all the steps of the workflow are completed.
 
-Then run another workflow to ingest tables `ObsCore` into the catalog `ivoa`:
+Then run another workflow to ingest the table `ObsCore` into the catalog `ivoa`:
 ```
 ./ingest_Object_ObsCore_in_ivoa.sh
 ```
