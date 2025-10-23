@@ -257,6 +257,16 @@ class ingest_api:
         }
         return self._put(url, data)
 
+    def set_scan_rating(self, database, table, rating):
+        if self._debug:
+            _info("SCAN:      database={} table={} rating={}".format(database, table, rating))
+
+        url = "{}/replication/qserv/css/shared-scan/{}/{}".format(self._qserv_config["repl-contr-url"], database, table)
+        data = {
+            "scanRating": rating,
+        }
+        return self._put(url, data)
+
     def _get(self, url, data=None):
         return self._request("GET", url, data)
 
