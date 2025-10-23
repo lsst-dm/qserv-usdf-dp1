@@ -25,7 +25,7 @@ Now, create the configuration file using an example found in this folder:
 ```
 mv qserv.json.example qserv.json
 ```
-Edit the file to set the correct values of the authorization keys ``auth-key`` and ``admin-auth-key `` as  are configured in the cluster:
+Edit the file to set the correct values of the authorization keys ``auth-key`` and ``admin-auth-key `` as they are configured in the cluster:
 ```
 cat qserv.json
 {
