@@ -1,5 +1,7 @@
 # qserv-usdf-dp1
-Tools and configuration files for ingesting the DP1 catalog in Qserv deployments at USDF
+Tools and configuration files for ingesting the DP1 catalog in Qserv deployments at USDF. The implementation of the ingest workflow
+is based on the REST API documented in:
+- https://qserv.lsst.io/ingest/api/
 
 ## Ingesting into the Kubernetes-based Qserv deployment `qserv-dev-vcluster`
 Follow instructions for obtaining and setting credentials for the cluster:
