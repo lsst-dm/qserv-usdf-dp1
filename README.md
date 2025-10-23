@@ -47,8 +47,6 @@ The logs of each step of both workflows would be placed into the following folde
 ```
 ls -al logs/
 ```
-
-### Tuning up CSS parameters of the ingested tables
 The final step would be to tune the scan rating for the tables to the desired values. For example:
 ```
 ../tools/set-scan-rating.py --database=dp1 --table=DiaSource 2
@@ -56,9 +54,9 @@ The final step would be to tune the scan rating for the tables to the desired va
 ../tools/set-scan-rating.py --database=dp1 --table=ForcedSourceOnDiaObject 25
 ../tools/set-scan-rating.py --database=dp1 --table=Source 15
 ```
-### Deleting the catalog(s)
+## Deleting the catalog(s)
 These operations should be run from the above-mentioned deployment-specific folder, where the local repo of the Git package was placed
-and where the properly configured file `qserv.json` was created:
+and where the properly configured file `qserv.json` was created. For example:
 ```
 cd /tmp/qserv-usdf-dp1/ingest/qserv-dev-vcluster
 ../tools/delete-database.py --database=dp1
