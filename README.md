@@ -17,7 +17,7 @@ All subsequent steps are performed within the pod:
 ```
 cd /tmp/
 git clone  https://github.com/lsst-dm/qserv-usdf-dp1.git
-cd qserv-usdf-dp1/ingest/qserv-dev-vcluster
+cd /tmp/qserv-usdf-dp1/ingest/qserv-dev-vcluster
 ```
 Now, create the configuration file using an example found in this folder:
 ```
@@ -33,15 +33,22 @@ cat qserv.json
   "admin-auth-key": ""
 }
 ```
-After that, start the ingest workflow by:
+After that, start the ingest workflow for ``dp1`` by:
 ```
 ./ingest_all.sh
 ```
-Normally, it would take about 30 minutes before all the steps of the workflow are completed. The logs of each step would be plased into the following
-forder that is created by the workflow:
+Normally, it would take about 30 minutes before all the steps of the workflow are completed.
+
+Then run another workflow to ingest tables `ObsCore` into the catalog `ivoa`:
+```
+./ingest_Object_ObsCore_in_ivoa.sh
+```
+The logs of each step of both workflows would be placed into the following folder that is created by the workflow:
 ```
 ls -al logs/
 ```
+
+### Tuning up CSS parameters of the ingested tables
 The final step would be to tune the scan rating for the tables to the desired values. For example:
 ```
 ../tools/set-scan-rating.py --database=dp1 --table=DiaSource 2
@@ -49,3 +56,12 @@ The final step would be to tune the scan rating for the tables to the desired va
 ../tools/set-scan-rating.py --database=dp1 --table=ForcedSourceOnDiaObject 25
 ../tools/set-scan-rating.py --database=dp1 --table=Source 15
 ```
+### Deleting the catalog(s)
+These operations should be run from the above-mentioned deployment-specific folder, where the local repo of the Git package was placed
+and where the properly configured file `qserv.json` was created:
+```
+cd /tmp/qserv-usdf-dp1/ingest/qserv-dev-vcluster
+../tools/delete-database.py --database=dp1
+../tools/delete-database.py --database=ivoa
+```
+After that, the ingest can be repeated from scratch.
