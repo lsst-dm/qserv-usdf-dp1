@@ -15,7 +15,7 @@ def parseArguments():
         """The required name of a database family affected by the operation.
         The database should exist, it can be published or not.""")
     parser.add_argument(
-        "--level",
+        "level",
         """The required replicaton level for the family. The number must be at least 1.
         The level may be also limited by this application to avoid damaging Qserv deployment.""")
 
@@ -36,5 +36,5 @@ if __name__ == '__main__':
     args = parseArguments()
 
     api = ingest_api(args.qserv_config, args.debug)
-    api.set_family_repl_level(args.family, args.level)
+    api.set_repl_level(args.family, args.level)
 

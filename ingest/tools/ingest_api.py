@@ -236,7 +236,7 @@ class ingest_api:
         }
         return self._post(url, data)
 
-    def set_family_repl_level(self, family, level):
+    def set_repl_level(self, family, level):
         if self._debug:
             _info("REPL-LVL:  family={} level={}".format(family, level))
 
