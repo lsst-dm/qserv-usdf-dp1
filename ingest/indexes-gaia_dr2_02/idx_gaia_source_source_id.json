@@ -1,0 +1,12 @@
+{
+    "index": "idx_source_id",
+    "spec": "UNIQUE",
+    "comment": "The unique index on the primary key for the source identifiers",
+    "columns": [
+        {
+            "column": "source_id",
+            "length": 0,
+            "ascending": 1
+        }
+    ]
+}
