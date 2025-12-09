@@ -1,0 +1,12 @@
+{
+    "index": "idx_id_truth_type",
+    "spec": "UNIQUE",
+    "comment": "The unique index on the PK of the table",
+    "columns": [
+        {
+            "column": "id_truth_type",
+            "length": 0,
+            "ascending": 1
+        }
+    ]
+}

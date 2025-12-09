@@ -1,0 +1,11 @@
+{
+    "index": "idx_forcedSourceOnDiaObjectId",
+    "comment": "The non-unique index on the force source identifiers",
+    "columns": [
+        {
+            "column": "forcedSourceOnDiaObjectId",
+            "length": 0,
+            "ascending": 1
+        }
+    ]
+}

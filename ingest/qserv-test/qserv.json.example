@@ -1,4 +1,5 @@
 {
+  "api-version":    49,
   "instance-id":    "slac6test",
   "repl-contr-url": "http://sdfqserv001:25881",
   "auth-key":       "",

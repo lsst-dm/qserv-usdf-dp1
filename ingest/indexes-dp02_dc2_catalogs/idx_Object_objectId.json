@@ -1,0 +1,12 @@
+{
+    "index": "idx_objectId",
+    "spec": "UNIQUE",
+    "comment": "The unique index on the primary key for the object identifiers",
+    "columns": [
+        {
+            "column": "objectId",
+            "length": 0,
+            "ascending": 1
+        }
+    ]
+}

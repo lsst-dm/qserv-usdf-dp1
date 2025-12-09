@@ -1,8 +1,7 @@
 import json as json
+import random
 import requests
 import sys
-
-_api_version = 49
 
 def _info(message):
     sys.stdout.write("{}\n".format(message))
@@ -111,8 +110,12 @@ class ingest_api:
 
         respJson = self._post(url, data)
 
+        # There was a change in REST API 52, in whichthe names of the location keys
+        # were unified to be "locations". The fix was meant to address inconsisttencies
+        # in the REST API. The iterator below tries both keys to see which one would work:
         locations = {}
-        for location in respJson["location"]:
+        key = "location" if "location" in respJson else "locations"
+        for location in respJson[key]:
             locations[location["chunk"]] = location
 
         return locations
@@ -129,6 +132,104 @@ class ingest_api:
         respJson = self._get(url, data)
 
         return respJson["locations"]
+
+    def export_database_config(self, database):
+        if self._debug:
+            _info("EXPORT-C:  database={}".format(database))
+
+        url = "{}/export/config/{}".format(self._qserv_config["repl-contr-url"], database)
+        return self._get(url)
+
+    def export_table_config(self, database, table):
+        if self._debug:
+            _info("EXPORT-C:  database={} table={}".format(database, table))
+
+        url = "{}/export/config/{}/{}".format(self._qserv_config["repl-contr-url"], database, table)
+        return self._get(url)
+
+    def export_chunks(self, database, table, is_director, fields_terminated_by, fields_enclosed_by):
+        if self._debug:
+            _info("EXPORT:    database={} table={} is_director{} fields_terminated_by={} fields_enclosed_by={}".format(
+                database, table, is_director, fields_terminated_by, fields_enclosed_by))
+
+        url = "{}/export/locations/{}/{}".format(self._qserv_config["repl-contr-url"], database, table)
+        respJson = self._get(url)
+
+        locations = []
+        for chunk_spec in respJson["chunks"]:
+            chunk = chunk_spec["chunk"]
+            if chunk == 1234567890:
+                # The special chunk is never ingested directly
+                continue
+
+            # Pick the randon worker (if more than 1 is available) to ensure uniform
+            # distribution of the chunk exportation requests among the workers.
+            num_workers = len(chunk_spec["locations"])
+            worker_idx = random.randint(0, num_workers-1)
+            idx = 0
+            for worker in chunk_spec["locations"]:
+                if idx != worker_idx:
+                    idx = idx + 1
+                    continue
+                base_url = "http://{}:{}/worker/export/{}/{}/{}".format(
+                        worker["host"]["name"],
+                        worker["port"],
+                        database,
+                        table,
+                        chunk)
+                csv_dialect=""
+                if fields_terminated_by is not None and fields_terminated_by != "":
+                    csv_dialect = "{}&fields_terminated_by={}".format(csv_dialect,fields_terminated_by)
+                if fields_enclosed_by is not None and fields_enclosed_by != "":
+                    csv_dialect = "{}&fields_enclosed_by={}".format(csv_dialect,fields_enclosed_by)
+                locations.append({
+                    "chunk":chunk,
+                    "overlap":0,
+                    "url":"{}?overlap=0{}".format(base_url, csv_dialect)})
+                if is_director:
+                    locations.append({
+                        "chunk":chunk,
+                        "overlap":1,
+                        "url":"{}?overlap=1{}".format(base_url, csv_dialect)})
+                break
+
+        return locations
+
+    def export_table(self, database, table, fields_terminated_by, fields_enclosed_by):
+        if self._debug:
+            _info("EXPORT:    database={} table={} fields_terminated_by={} fields_enclosed_by={}".format(database, table, fields_terminated_by, fields_enclosed_by))
+
+        url = "{}/export/locations/{}/{}".format(self._qserv_config["repl-contr-url"], database, table)
+        respJson = self._get(url)
+
+        locations = []
+
+        # Pick the randon worker (if more than 1 is available) to ensure uniform
+        # distribution of the chunk exportation requests among the workers.
+        num_workers = len(respJson["locations"])
+        worker_idx = random.randint(0, num_workers-1)
+        idx = 0
+        for worker in respJson["locations"]:
+            if idx != worker_idx:
+                idx = idx + 1
+                continue
+            csv_dialect=""
+            if fields_terminated_by is not None and fields_terminated_by != "":
+                separator = "?" if csv_dialect == "" else "&"
+                csv_dialect = "{}{}fields_terminated_by={}".format(csv_dialect, separator, fields_terminated_by)
+            if fields_enclosed_by is not None and fields_enclosed_by != "":
+                separator = "?" if csv_dialect == "" else "&"
+                csv_dialect = "{}{}fields_enclosed_by={}".format(csv_dialect, separator, fields_enclosed_by)
+            url = "http://{}:{}/worker/export/{}/{}{}".format(
+                worker["host"]["name"],
+                worker["port"],
+                database,
+                table,
+                csv_dialect)
+            locations.append(url)
+            break
+
+        return locations
 
     def start_trans(self, database):
         if self._debug:
@@ -284,13 +385,14 @@ class ingest_api:
             _info("REQUEST:   method={} url={} data={}".format(method, url, data))
 
         if method == "GET":
-            query_param_separator = "?" if url.find("?") == -1 else "&"
-            url = "{}{}version={}".format(url, query_param_separator, _api_version)
+            if "api_version" in self._qserv_config:
+                query_param_separator = "?" if url.find("?") == -1 else "&"
+                url = "{}{}version={}".format(url, query_param_separator, self._qserv_config["api_version"])
         else:
             data["auth_key"] = self._qserv_config["auth-key"]
             data["admin_auth_key"] = self._qserv_config["admin-auth-key"]
-            if "version" not in data:
-                data["version"] = _api_version
+            if ("version" not in data) and ("api_version" in self._qserv_config):
+                data["version"] = self._qserv_config["api_version"]
 
         resp = requests.request(method, url, json=data, timeout=None)
         if resp.status_code != 200:

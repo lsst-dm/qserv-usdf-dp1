@@ -74,3 +74,37 @@ def urls2chunks(filename):
         for url in f:
             chunks.add(contrib2chunk(url))
     return chunks
+
+def parse_contrib_location(loc):
+
+    # Location strings may have one of the following formats
+    #
+    # - Direct URLs to the CVS files of chunks or chunk overlaps:
+    #
+    #     http://<host>:<port>/.../chunk_<number>.txt
+    #     http://<host>:<port>/.../chunk_<number>_overlap.txt
+    #     https://<host>:<port>/.../chunk_<number>.txt
+    #     https://<host>:<port>/.../chunk_<number>_overlap.txt
+    #
+    #   Note that the last fragment of the path is required to have
+    #   a special format illustrated above. The algorithm of the function
+    #   relies on ti sconvention to extract the chunk number and the overlap
+    #   attribute from the url.
+    #
+    # - Serialized JSON objects:
+    #
+    #     {"chunk":<number>,"overlap":<number>,"url":<string>}
+    #
+    #   Where a value of the "url" attribute could be any valid location.
+    #   No specific naming convention exists for these urls.
+    #
+    # The method returns a dictionary that's is similar to the schema of
+    # the serialized JSON object.
+
+    if loc.startswith("http"):
+        return {
+            "chunk": contrib2chunk(loc),
+            "overlap": contrib2overlap(loc),
+            "url": loc}
+
+    return json.loads(loc)

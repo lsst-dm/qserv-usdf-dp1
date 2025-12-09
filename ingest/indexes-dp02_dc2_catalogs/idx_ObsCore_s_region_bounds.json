@@ -1,0 +1,12 @@
+{
+    "index": "idx_s_region_bounds",
+    "spec":"SPATIAL",
+    "comment": "The spatial index on the geometric region s_region_bounds",
+    "columns": [
+        {
+            "column": "s_region_bounds",
+            "length": 0,
+            "ascending": 1
+        }
+    ]
+}

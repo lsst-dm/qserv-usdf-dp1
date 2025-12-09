@@ -1,0 +1,11 @@
+{
+    "index": "idx_diaObjectId",
+    "comment": "The non-unique index on the foreign key for the DIA object identifiers",
+    "columns": [
+        {
+            "column": "diaObjectId",
+            "length": 0,
+            "ascending": 1
+        }
+    ]
+}

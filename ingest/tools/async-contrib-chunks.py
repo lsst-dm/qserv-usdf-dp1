@@ -6,7 +6,7 @@ import sys
 import time
 
 from ingest_api import ingest_api
-from ingest_util import fatal, info, argument_parser, contrib2chunk, contrib2overlap
+from ingest_util import fatal, info, argument_parser, parse_contrib_location
 
 def parseArguments():
     parser = argument_parser(
@@ -48,7 +48,7 @@ def parseArguments():
     return args
 
 def get_chunk_locations(api, database, urls):
-    chunks = set([contrib2chunk(url) for url in urls])
+    chunks = set([parse_contrib_location(contrib_loc_str)["chunk"] for contrib_loc_str in urls])
     return api.locate_chunks(database, chunks)
 
 if __name__ == '__main__':
@@ -66,15 +66,18 @@ if __name__ == '__main__':
         info("TRANS:     {}\tSTARTED".format(trans_id))
 
     contrib_entries = {}
-    for url in urls:
-        chunk = contrib2chunk(url)
+    for contrib_loc_str in urls:
+        contrib_loc = parse_contrib_location(contrib_loc_str)
+        chunk   = contrib_loc["chunk"]
+        overlap = contrib_loc["overlap"]
+        url     = contrib_loc["url"]
         contrib_descr = {
             "transaction_id":       trans_id,
             "table":                args.table,
             "fields_terminated_by": args.fields_terminated_by,
             "fields_enclosed_by":   args.fields_enclosed_by,
             "chunk":                chunk,
-            "overlap":              contrib2overlap(url),
+            "overlap":              overlap,
             "url":                  url}
         location = chunk_locations[chunk]
         contrib = api.async_contrib(location, contrib_descr)
