@@ -1,0 +1,10 @@
+../tools/unpublish-database.py --database=dp02_dc2_catalogs --verbose
+../tools/register-table.py --database=dp02_dc2_catalogs --table=ObsCore --verbose ../tables-dp02_dc2_catalogs-ObsCore/ObsCore.json
+../tools/async-contrib-table.py --database=dp02_dc2_catalogs --table=ObsCore --fields-terminated-by=',' --fields-enclosed-by='"' --verbose --url=http://sdfqserv001.sdf.slac.stanford.edu:18080/dp02_dc2_catalogs/output/ObsCore/ObsCore.csv
+../tools/publish-database.py --database=dp02_dc2_catalogs --verbose
+../tools/rebuild-row-counters.py  --database=dp02_dc2_catalogs --table=ObsCore --verbose
+for idx in $(ls ../indexes-dp02_dc2_catalogs-ObsCore/ | grep ObsCore); do
+    echo $idx;
+    ../tools/create-table-index.py --database=dp02_dc2_catalogs --table=ObsCore ../indexes-dp02_dc2_catalogs-ObsCore/${idx};
+done
+
