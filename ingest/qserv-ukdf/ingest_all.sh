@@ -23,7 +23,7 @@ mkdir -p ${LOG_DIR}
 TOOLS=${BASE_DIR}/../tools
 TABLE_CONFIG=${BASE_DIR}/../tables
 INDEX_CONFIG=${BASE_DIR}/../indexes
-DATA_DIR=${BASE_DIR}/../data
+DATA_DIR=${BASE_DIR}/../data-k8s-nginx
 
 # Variables that define a scope of the ingest
 DATABASE=dp1

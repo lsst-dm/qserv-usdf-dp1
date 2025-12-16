@@ -23,31 +23,17 @@ mkdir -p ${LOG_DIR}
 TOOLS=${BASE_DIR}/../tools
 TABLE_CONFIG=${BASE_DIR}/../tables
 INDEX_CONFIG=${BASE_DIR}/../indexes
-DATA_DIR=${BASE_DIR}/../data
+DATA_DIR=${BASE_DIR}/../data-k8s-nginx
 
 # Variables that define a scope of the ingest
-DATABASE=dp1
+DATABASE=ivoa
 DATABASE_OPT="--database=${DATABASE}"
 VERBOSE_OPT="--verbose"
 DEBUG_OPT=
-DIRECTOR_TABLES="Object Source DiaObject"
-PARTITIONED_TABLES="Object Source ForcedSource DiaObject DiaSource ForcedSourceOnDiaObject"
-FULLY_REPLICATED_TABLES="SSObject SSSource Visit CcdVisit CoaddPatches MPCORB"
-ALL_TABLES="${PARTITIONED_TABLES} ${FULLY_REPLICATED_TABLES}"
 
 # CSV dialect definitions for the tables
 Object_CSV_DIALECT=
-Source_CSV_DIALECT=
-ForcedSource_CSV_DIALECT=
-DiaObject_CSV_DIALECT=
-DiaSource_CSV_DIALECT='--fields-enclosed-by="'
-ForcedSourceOnDiaObject_CSV_DIALECT=
-SSObject_CSV_DIALECT='--fields-enclosed-by="'
-SSSource_CSV_DIALECT='--fields-enclosed-by="'
-Visit_CSV_DIALECT='--fields-enclosed-by="'
-CcdVisit_CSV_DIALECT='--fields-enclosed-by="'
-CoaddPatches_CSV_DIALECT='--fields-enclosed-by=" --fields-terminated-by=,'
-MPCORB_CSV_DIALECT='--fields-enclosed-by="'
+ObsCore_CSV_DIALECT='--fields-enclosed-by=" --fields-terminated-by=,'
 
 # Prepare the confguration file qserv.json. The file will contain the authorization
 # context for the subsequent operations performed by the ingest tools.
@@ -65,7 +51,7 @@ if [ $? -ne 0 ] ; then
 fi
 
 APP=register-table
-for TABLE in ${ALL_TABLES}; do
+for TABLE in Object ObsCore; do
   LOG=${LOG_DIR}/${APP}-${TABLE}.log;
   echo $(TIMESTAMP)"Register table ${TABLE} -> ${LOG}";
   ${TOOLS}/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} ${TABLE_CONFIG}/${TABLE}.json >& ${LOG};
@@ -76,29 +62,27 @@ for TABLE in ${ALL_TABLES}; do
 done
 
 APP=async-contrib-chunks
-for TABLE in ${PARTITIONED_TABLES}; do
-  LOG=${LOG_DIR}/${APP}-${TABLE}.log;
-  CSV_DIALECT="${TABLE}_CSV_DIALECT";
-  echo $(TIMESTAMP)"Ingest chunk contributions into ${TABLE} -> ${LOG}";
-  ${TOOLS}/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${!CSV_DIALECT} ${VERBOSE_OPT} ${DEBUG_OPT} ${DATA_DIR}/${TABLE}.urls >& ${LOG};
-  if [ $? -ne 0 ] ; then
-    echo $(TIMESTAMP)FAILED;
-    exit 1;
-  fi;
-done
+TABLE="Object"
+LOG=${LOG_DIR}/${APP}-${TABLE}.log;
+CSV_DIALECT="${TABLE}_CSV_DIALECT";
+echo $(TIMESTAMP)"Ingest chunk contributions into ${TABLE} -> ${LOG}";
+${TOOLS}/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${!CSV_DIALECT} ${VERBOSE_OPT} ${DEBUG_OPT} ${DATA_DIR}/${TABLE}-chunk-84482.urls >& ${LOG};
+if [ $? -ne 0 ] ; then
+  echo $(TIMESTAMP)FAILED;
+  exit 1;
+fi
 
 APP=async-contrib-table
-for TABLE in ${FULLY_REPLICATED_TABLES}; do
-  URL=$(cat ${DATA_DIR}/${TABLE}.urls);
-  LOG=${LOG_DIR}/${APP}-${TABLE}.log;
-  CSV_DIALECT="${TABLE}_CSV_DIALECT";
-  echo $(TIMESTAMP)"Ingest table contributions into ${TABLE} -> ${LOG}";
-  ${TOOLS}/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${!CSV_DIALECT} ${VERBOSE_OPT} ${DEBUG_OPT} --url=${URL} >& ${LOG};
-  if [ $? -ne 0 ] ; then
-    echo $(TIMESTAMP)FAILED;
-    exit 1;
-  fi;
-done
+TABLE=ObsCore
+URL=$(cat ${DATA_DIR}/${TABLE}.urls);
+LOG=${LOG_DIR}/${APP}-${TABLE}.log;
+CSV_DIALECT="${TABLE}_CSV_DIALECT";
+echo $(TIMESTAMP)"Ingest table contributions into ${TABLE} -> ${LOG}";
+${TOOLS}/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${!CSV_DIALECT} ${VERBOSE_OPT} ${DEBUG_OPT} --url=${URL} >& ${LOG};
+if [ $? -ne 0 ] ; then
+  echo $(TIMESTAMP)FAILED;
+  exit 1;
+fi
 
 APP=publish-database
 LOG=${LOG_DIR}/${APP}.log
@@ -110,18 +94,17 @@ if [ $? -ne 0 ] ; then
 fi
 
 APP=create-director-index
-for TABLE in ${DIRECTOR_TABLES}; do
-  LOG=${LOG_DIR}/${APP}-${TABLE}.log;
-  echo $(TIMESTAMP)"Create director index on ${TABLE} -> ${LOG}";
-  ${TOOLS}/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} >& ${LOG};
-  if [ $? -ne 0 ] ; then
-    echo $(TIMESTAMP)FAILED;
-    exit 1;
-  fi;
-done
+TABLE=Object
+LOG=${LOG_DIR}/${APP}-${TABLE}.log;
+echo $(TIMESTAMP)"Create director index on ${TABLE} -> ${LOG}";
+${TOOLS}/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} >& ${LOG};
+if [ $? -ne 0 ] ; then
+  echo $(TIMESTAMP)FAILED;
+  exit 1;
+fi
 
 APP=create-table-index
-for TABLE in ${ALL_TABLES}; do
+for TABLE in Object ObsCore; do
   for idx in $(ls ../indexes/ | grep "_${TABLE}_" | grep json); do
     LOG=${LOG_DIR}/${APP}-${idx::-5}.log;
     echo $(TIMESTAMP)"Create table index ${idx::-5} -> ${LOG}";
@@ -134,7 +117,7 @@ for TABLE in ${ALL_TABLES}; do
 done
 
 APP=rebuild-row-counters
-for TABLE in ${ALL_TABLES}; do
+for TABLE in Object ObsCore; do
   LOG=${LOG_DIR}/${APP}-${TABLE}.log;
   echo $(TIMESTAMP)"Build row counter stats on ${TABLE} -> ${LOG}";
   ${TOOLS}/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} >& ${LOG};
