@@ -46,7 +46,7 @@ The next step is to get the simple ingest workflow:
 ```
 cd /qserv/data
 git clone  https://github.com/lsst-dm/qserv-usdf-dp1.git
-cd qserv-usdf-dp1/ingest/qserv-dev-vcluster
+cd qserv-usdf-dp1/ingest/qserv-ukdf
 ```
 After that, start the ingest workflow for ``dp1`` by:
 ```
@@ -108,6 +108,12 @@ The final step would be to tune the scan rating for the tables to the desired va
 ## Deleting the catalog(s)
 These operations should be run from the above-mentioned deployment-specific folder, where the local repository of the Git package is located.
 If the folder and the package do not exist, then create them as it was explained earlier.
+
+For UKDF, go to:
+```
+cd /qserv/data/qserv-usdf-dp1/ingest/qserv-ukdf
+```
+For USDF, go to:
 ```
 cd /qserv/data/qserv-usdf-dp1/ingest/qserv-dev-vcluster
 ```
@@ -119,4 +125,4 @@ source make_config.source
 ../tools/delete-database.py --database=dp1
 ../tools/delete-database.py --database=ivoa
 ```
-After that, the ingest can be repeated from scratch.
+After that, the ingestion of both catalogs can be repeated from scratch.
