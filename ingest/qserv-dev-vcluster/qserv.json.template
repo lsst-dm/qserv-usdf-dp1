@@ -1,7 +1,7 @@
 {
   "api-version":    51,
-  "instance-id":    "slac-dev",
-  "repl-contr-url": "http://qserv-repl-0.qserv-repl.qserv-dev.svc.cluster.local:25081",
-  "auth-key":       "",
-  "admin-auth-key": ""
+  "instance-id":    "CHANGEME-INSTANCE-ID",
+  "repl-contr-url": "http://qserv-repl-0.qserv-repl:25081",
+  "auth-key":       "CHANGEME-AUTH-KEY",
+  "admin-auth-key": "CHANGEME-ADMIN-AUTH-KEY"
 }

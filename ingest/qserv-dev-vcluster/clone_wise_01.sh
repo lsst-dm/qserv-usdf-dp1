@@ -44,6 +44,7 @@ mkdir -p ${INDIR}/tables
 mkdir -p ${INDIR}/data
 mkdir -p ${INDIR}/indexes
 
+# NOTE: Kubernetes-based deployments only!
 # Prepare the confguration file qserv.json. The file will contain the authorization
 # context for the subsequent operations performed by the ingest tools.
 source make_config.source
