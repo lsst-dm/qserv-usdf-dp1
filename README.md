@@ -52,7 +52,7 @@ After that, start the ingest workflow for ``dp1`` by:
 ```
 ./ingest_all.sh >& ingest_all.log&
 ```
-Then watch the progress of the ingest by following the log. Normally, it takes about 30 minutes for all the steps of the workflow to be completed.
+Then watch for the progress of the ingest by following the log. Normally, it takes about 30 minutes for all the steps of the workflow to be completed.
 
 The next step is to ingest the table `ObsCore` into the catalog `ivoa`:
 ```
