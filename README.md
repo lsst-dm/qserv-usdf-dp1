@@ -15,7 +15,7 @@ All subsequent steps are performed within the pod. The first step is to pull the
 cd /qserv/data/html
 mkdir -p dp1/data/
 cd dp1/data/
-curl <data-file-url> -odp1.tgz
+curl <data-file-url> -o dp1.tgz
 tar xvf dp1.tgz
 rm dp1.tgz
 ```
