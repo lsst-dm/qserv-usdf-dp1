@@ -39,7 +39,7 @@ drwxr-xr-x  2 45386 1126   3 May 20  2025 Visit
 ```
 Another test would be to pull one of these files via Qserv's `nginx` service:
 ```
-curl http://qserv-ingest-0.qserv-ingest/dp1/data/Visit/Visit.csv -rubbish.csv
+curl http://qserv-ingest-0.qserv-ingest/dp1/data/Visit/Visit.csv -o rubbish.csv
 rm rubbish.csv
 ```
 The next step is to get the simple ingest workflow:
