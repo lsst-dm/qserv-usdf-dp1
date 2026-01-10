@@ -1,227 +1,143 @@
 #!/bin/bash
 
+function TIMESTAMP {
+  echo "[$(date +'%F %H:%M:%S')] "
+}
+
 BASE_DIR=$(dirname "$0")
 if [ -z "$BASE_DIR" ] || [ "$0" = "bash" ]; then
-    >&2 echo "error: variable 'BASE_DIR' is not defined"
-    return 1
+    >&2 echo "error: variable 'BASE_DIR' is not defined";
+    return 1;
 fi
 BASE_DIR=$(readlink -e "$BASE_DIR")
 if [ ! -d "$BASE_DIR" ]; then
-    >&2 echo "error: path 'BASE_DIR' is not a valid directory"
-    return 1
+    >&2 echo "error: path 'BASE_DIR' is not a valid directory";
+    return 1;
 fi
 LOG_DIR=${BASE_DIR}/logs
 cd ${BASE_DIR}
 
-rm -rf logs/
-mkdir -p logs
+rm -rf ${LOG_DIR}
+mkdir -p ${LOG_DIR}
 
+TOOLS=${BASE_DIR}/../tools
+TABLE_CONFIG=${BASE_DIR}/../tables
+INDEX_CONFIG=${BASE_DIR}/../indexes
+DATA_DIR=${BASE_DIR}/../data
+
+# Variables that define a scope of the ingest
 DATABASE=dp1
 DATABASE_OPT="--database=${DATABASE}"
 VERBOSE_OPT="--verbose"
 DEBUG_OPT=
+DIRECTOR_TABLES="Object Source DiaObject"
+PARTITIONED_TABLES="Object Source ForcedSource DiaObject DiaSource ForcedSourceOnDiaObject"
+FULLY_REPLICATED_TABLES="SSObject SSSource Visit CcdVisit ObsCore CoaddPatches MPCORB"
+ALL_TABLES="${PARTITIONED_TABLES} ${FULLY_REPLICATED_TABLES}"
+
+# CSV dialect definitions for the tables
+Object_CSV_DIALECT=
+Source_CSV_DIALECT=
+ForcedSource_CSV_DIALECT=
+DiaObject_CSV_DIALECT=
+DiaSource_CSV_DIALECT='--fields-enclosed-by="'
+ForcedSourceOnDiaObject_CSV_DIALECT=
+SSObject_CSV_DIALECT='--fields-enclosed-by="'
+SSSource_CSV_DIALECT='--fields-enclosed-by="'
+Visit_CSV_DIALECT='--fields-enclosed-by="'
+CcdVisit_CSV_DIALECT='--fields-enclosed-by="'
+ObsCore_CSV_DIALECT='--fields-enclosed-by=" --fields-terminated-by=,'
+CoaddPatches_CSV_DIALECT='--fields-enclosed-by=" --fields-terminated-by=,'
+MPCORB_CSV_DIALECT='--fields-enclosed-by="'
 
 APP=register-database
 LOG=${LOG_DIR}/${APP}.log
-echo "Register database ${DATABASE} -> ${LOG}"
-../tools/${APP}.py ${DATABASE_OPT} ${VERBOSE_OPT} ${DEBUG_OPT} ../${DATABASE}.json >& ${LOG}
+echo $(TIMESTAMP)"Register database ${DATABASE} -> ${LOG}"
+${TOOLS}/${APP}.py ${DATABASE_OPT} ${VERBOSE_OPT} ${DEBUG_OPT} ../${DATABASE}.json >& ${LOG}
 if [ $? -ne 0 ] ; then
-  echo FAILED;
+  echo $(TIMESTAMP)FAILED;
   exit 1;
 fi
 
- 
 APP=register-table
-for TABLE in Object Source ForcedSource DiaObject DiaSource ForcedSourceOnDiaObject SSObject SSSource Visit CcdVisit ObsCore CoaddPatches MPCORB; do
+for TABLE in ${ALL_TABLES}; do
   LOG=${LOG_DIR}/${APP}-${TABLE}.log;
-  echo "Register table ${TABLE} -> ${LOG}";
-  ../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} ../tables/${TABLE}.json >& ${LOG};
+  echo $(TIMESTAMP)"Register table ${TABLE} -> ${LOG}";
+  ${TOOLS}/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} ${TABLE_CONFIG}/${TABLE}.json >& ${LOG};
   if [ $? -ne 0 ] ; then
-    echo FAILED;
+    echo $(TIMESTAMP)FAILED;
     exit 1;
   fi;
 done
 
 APP=async-contrib-chunks
-TABLE=Object
-LOG=${LOG_DIR}/${APP}-${TABLE}.log
-echo "Ingest chunk contributions into ${TABLE} -> ${LOG}"
-../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} ../data/${TABLE}.urls >& ${LOG}
-if [ $? -ne 0 ] ; then
-  echo FAILED;
-  exit 1;
-fi
-
-APP=async-contrib-chunks
-TABLE=Source
-LOG=${LOG_DIR}/${APP}-${TABLE}.log
-echo "Ingest chunk contributions into ${TABLE} -> ${LOG}"
-../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} ../data/${TABLE}.urls >& ${LOG}
-if [ $? -ne 0 ] ; then
-  echo FAILED;
-  exit 1;
-fi
-
-APP=async-contrib-chunks
-TABLE=ForcedSource
-LOG=${LOG_DIR}/${APP}-${TABLE}.log
-echo "Ingest chunk contributions into ${TABLE} -> ${LOG}"
-../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} ../data/${TABLE}.urls >& ${LOG}
-if [ $? -ne 0 ] ; then
-  echo FAILED;
-  exit 1;
-fi
-
-APP=async-contrib-chunks
-TABLE=DiaObject
-LOG=${LOG_DIR}/${APP}-${TABLE}.log
-echo "Ingest chunk contributions into ${TABLE} -> ${LOG}"
-../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} ../data/${TABLE}.urls >& ${LOG}
-if [ $? -ne 0 ] ; then 
-  echo FAILED;
-  exit 1;
-fi
-
-APP=async-contrib-chunks
-TABLE=DiaSource
-LOG=${LOG_DIR}/${APP}-${TABLE}.log
-echo "Ingest chunk contributions into ${TABLE} -> ${LOG}"
-../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} --fields-enclosed-by='"' ${VERBOSE_OPT} ${DEBUG_OPT} ../data/${TABLE}.urls >& ${LOG}
-if [ $? -ne 0 ] ; then
-  echo FAILED;
-  exit 1;
-fi
-
-APP=async-contrib-chunks
-TABLE=ForcedSourceOnDiaObject
-LOG=${LOG_DIR}/${APP}-${TABLE}.log
-echo "Ingest chunk contributions into ${TABLE} -> ${LOG}"
-../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} ../data/${TABLE}.urls >& ${LOG}
-if [ $? -ne 0 ] ; then
-  echo FAILED;
-  exit 1;
-fi
+for TABLE in ${PARTITIONED_TABLES}; do
+  LOG=${LOG_DIR}/${APP}-${TABLE}.log;
+  CSV_DIALECT="${TABLE}_CSV_DIALECT";
+  echo $(TIMESTAMP)"Ingest chunk contributions into ${TABLE} -> ${LOG}";
+  ${TOOLS}/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${!CSV_DIALECT} ${VERBOSE_OPT} ${DEBUG_OPT} ${DATA_DIR}/${TABLE}.urls >& ${LOG};
+  if [ $? -ne 0 ] ; then
+    echo $(TIMESTAMP)FAILED;
+    exit 1;
+  fi;
+done
 
 APP=async-contrib-table
-TABLE=SSObject
-URL=$(cat ../data/${TABLE}.urls)
-LOG=${LOG_DIR}/${APP}-${TABLE}.log
-echo "Ingest table contributions into ${TABLE} -> ${LOG}"
-../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} --fields-enclosed-by='"' ${VERBOSE_OPT} ${DEBUG_OPT} --url=${URL} >& ${LOG}
-if [ $? -ne 0 ] ; then
-  echo FAILED;
-  exit 1;
-fi
-
-APP=async-contrib-table
-TABLE=SSSource
-URL=$(cat ../data/${TABLE}.urls)
-LOG=${LOG_DIR}/${APP}-${TABLE}.log
-echo "Ingest table contributions into ${TABLE} -> ${LOG}"
-../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} --fields-enclosed-by='"' ${VERBOSE_OPT} ${DEBUG_OPT} --url=${URL} >& ${LOG}
-if [ $? -ne 0 ] ; then
-  echo FAILED;
-  exit 1;
-fi
-
-APP=async-contrib-table
-TABLE=Visit
-URL=$(cat ../data/${TABLE}.urls)
-LOG=${LOG_DIR}/${APP}-${TABLE}.log
-echo "Ingest table contributions into ${TABLE} -> ${LOG}"
-../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} --fields-enclosed-by='"' ${VERBOSE_OPT} ${DEBUG_OPT} --url=${URL} >& ${LOG}
-if [ $? -ne 0 ] ; then
-  echo FAILED;
-  exit 1;
-fi
-
-APP=async-contrib-table
-TABLE=CcdVisit
-URL=$(cat ../data/${TABLE}.urls)
-LOG=${LOG_DIR}/${APP}-${TABLE}.log
-echo "Ingest table contributions into ${TABLE} -> ${LOG}"
-../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} --fields-enclosed-by='"' ${VERBOSE_OPT} ${DEBUG_OPT} --url=${URL} >& ${LOG}
-if [ $? -ne 0 ] ; then
-  echo FAILED;
-  exit 1;
-fi
-
-APP=async-contrib-table
-TABLE=ObsCore
-URL=$(cat ../data/${TABLE}.urls)
-LOG=${LOG_DIR}/${APP}-${TABLE}.log
-echo "Ingest table contributions into ${TABLE} -> ${LOG}"
-../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} --fields-terminated-by=',' --fields-enclosed-by='"' ${VERBOSE_OPT} ${DEBUG_OPT} --url=${URL} >& ${LOG}
-if [ $? -ne 0 ] ; then
-  echo FAILED;
-  exit 1;
-fi
-
-APP=async-contrib-table
-TABLE=CoaddPatches
-URL=$(cat ../data/${TABLE}.urls)
-LOG=${LOG_DIR}/${APP}-${TABLE}.log
-echo "Ingest table contributions into ${TABLE} -> ${LOG}"
-../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} --fields-terminated-by=',' --fields-enclosed-by='"' ${VERBOSE_OPT} ${DEBUG_OPT} --url=${URL} >& ${LOG}
-if [ $? -ne 0 ] ; then
-  echo FAILED;
-  exit 1;
-fi
-
-APP=async-contrib-table
-TABLE=MPCORB
-URL=$(cat ../data/${TABLE}.urls)
-LOG=${LOG_DIR}/${APP}-${TABLE}.log
-echo "Ingest table contributions into ${TABLE} -> ${LOG}"
-../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} --fields-enclosed-by='"' ${VERBOSE_OPT} ${DEBUG_OPT} --url=${URL} >& ${LOG}
-if [ $? -ne 0 ] ; then
-  echo FAILED;
-  exit 1;
-fi
+for TABLE in ${FULLY_REPLICATED_TABLES}; do
+  URL=$(cat ${DATA_DIR}/${TABLE}.urls);
+  LOG=${LOG_DIR}/${APP}-${TABLE}.log;
+  CSV_DIALECT="${TABLE}_CSV_DIALECT";
+  echo $(TIMESTAMP)"Ingest table contributions into ${TABLE} -> ${LOG}";
+  ${TOOLS}/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${!CSV_DIALECT} ${VERBOSE_OPT} ${DEBUG_OPT} --url=${URL} >& ${LOG};
+  if [ $? -ne 0 ] ; then
+    echo $(TIMESTAMP)FAILED;
+    exit 1;
+  fi;
+done
 
 APP=publish-database
 LOG=${LOG_DIR}/${APP}.log
-echo "Publish database ${DATABASE} -> ${LOG}"
-../tools/${APP}.py ${DATABASE_OPT} ${VERBOSE_OPT} ${DEBUG_OPT} >& ${LOG}
+echo $(TIMESTAMP)"Publish database ${DATABASE} -> ${LOG}"
+${TOOLS}/${APP}.py ${DATABASE_OPT} ${VERBOSE_OPT} ${DEBUG_OPT} >& ${LOG}
 if [ $? -ne 0 ] ; then
-  echo FAILED;
+  echo $(TIMESTAMP)FAILED;
   exit 1;
 fi
 
 APP=create-director-index
-for TABLE in Object Source DiaObject; do
+for TABLE in ${DIRECTOR_TABLES}; do
   LOG=${LOG_DIR}/${APP}-${TABLE}.log;
-  echo "Create director index on ${TABLE} -> ${LOG}";
-  ../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} >& ${LOG};
+  echo $(TIMESTAMP)"Create director index on ${TABLE} -> ${LOG}";
+  ${TOOLS}/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} >& ${LOG};
   if [ $? -ne 0 ] ; then
-    echo FAILED;
+    echo $(TIMESTAMP)FAILED;
     exit 1;
   fi;
 done
 
 APP=create-table-index
-for TABLE in Object Source ForcedSource DiaObject DiaSource ForcedSourceOnDiaObject SSObject SSSource Visit CcdVisit ObsCore CoaddPatches MPCORB; do
-  for idx in $(ls ../indexes/ | grep "_${TABLE}_" | grep json); do
+for TABLE in ${ALL_TABLES}; do
+  for idx in $(ls ${INDEX_CONFIG} | grep "_${TABLE}_" | grep json); do
     LOG=${LOG_DIR}/${APP}-${idx::-5}.log;
-    echo "Create table index ${idx::-5} -> ${LOG}";
-    ../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} ../indexes/${idx} >& ${LOG};
+    echo $(TIMESTAMP)"Create table index ${idx::-5} -> ${LOG}";
+    ${TOOLS}/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} ${INDEX_CONFIG}/${idx} >& ${LOG};
     if [ $? -ne 0 ] ; then
-      echo FAILED;
+      echo $(TIMESTAMP)FAILED;
       exit 1;
     fi;
   done;
 done
 
 APP=rebuild-row-counters
-for TABLE in Object Source ForcedSource DiaObject DiaSource ForcedSourceOnDiaObject SSObject SSSource Visit CcdVisit ObsCore CoaddPatches MPCORB; do
+for TABLE in ${ALL_TABLES}; do
   LOG=${LOG_DIR}/${APP}-${TABLE}.log;
-  echo "Build row counter stats on ${TABLE} -> ${LOG}";
-  ../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} >& ${LOG};
+  echo $(TIMESTAMP)"Build row counter stats on ${TABLE} -> ${LOG}";
+  ${TOOLS}/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} >& ${LOG};
   if [ $? -ne 0 ] ; then
-    echo FAILED : ${LOG};
+    echo $(TIMESTAMP)FAILED;
     exit 1;
   fi;
 done
 
-echo "DONE"
+echo $(TIMESTAMP)DONE
 

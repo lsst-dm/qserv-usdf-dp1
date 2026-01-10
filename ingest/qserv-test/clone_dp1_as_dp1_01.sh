@@ -86,6 +86,7 @@ for TABLE in ${DIRECTOR_TABLES}; do
     exit 1;
   fi;
 done
+
 for TABLE in ${DEPENDENT_TABLES}; do
   LOG=${LOG_DIR}/${APP}-${TABLE}.log;
   CSV_DIALECT="${TABLE}_CSV_DIALECT"
@@ -100,7 +101,7 @@ done
 APP=export-table
 for TABLE in ${FULLY_REPLICATED_TABLES}; do
   LOG=${LOG_DIR}/${APP}-${TABLE}.log;
-  CSV_DIALECT="${TABLE}_CSV_DIALECT"
+  CSV_DIALECT="${TABLE}_CSV_DIALECT";
   echo $(TIMESTAMP)"Export table ${TABLE} -> ${LOG}";
   ../tools/${APP}.py ${SOURCE_CONFIG_OPT} ${SOURCE_DATABASE_OPT} --table=${TABLE} ${!CSV_DIALECT} ${VERBOSE_OPT} ${DEBUG_OPT} ${INDIR}/data/${TABLE}.urls >& ${LOG};
   if [ $? -ne 0 ] ; then
@@ -131,10 +132,10 @@ done
 
 APP=async-contrib-chunks
 for TABLE in ${PARTITIONED_TABLES}; do
-  LOG=${LOG_DIR}/${APP}-${TABLE}.log
-  CSV_DIALECT="${TABLE}_CSV_DIALECT"
-  echo $(TIMESTAMP)"Ingest chunk contributions into ${TABLE} -> ${LOG}"
-  ../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${!CSV_DIALECT} ${VERBOSE_OPT} ${DEBUG_OPT} ${INDIR}/data/${TABLE}.urls >& ${LOG}
+  LOG=${LOG_DIR}/${APP}-${TABLE}.log;
+  CSV_DIALECT="${TABLE}_CSV_DIALECT";
+  echo $(TIMESTAMP)"Ingest chunk contributions into ${TABLE} -> ${LOG}";
+  ../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${!CSV_DIALECT} ${VERBOSE_OPT} ${DEBUG_OPT} ${INDIR}/data/${TABLE}.urls >& ${LOG};
   if [ $? -ne 0 ] ; then
     echo $(TIMESTAMP)FAILED;
     exit 1;
@@ -143,11 +144,11 @@ done
 
 APP=async-contrib-table
 for TABLE in ${FULLY_REPLICATED_TABLES}; do
-  URL=$(cat ${INDIR}/data/${TABLE}.urls)
-  LOG=${LOG_DIR}/${APP}-${TABLE}.log
-  CSV_DIALECT="${TABLE}_CSV_DIALECT"
-  echo $(TIMESTAMP)"Ingest table contributions into ${TABLE} -> ${LOG}"
-  ../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${!CSV_DIALECT} ${VERBOSE_OPT} ${DEBUG_OPT} --url=${URL} >& ${LOG}
+  URL=$(cat ${INDIR}/data/${TABLE}.urls);
+  LOG=${LOG_DIR}/${APP}-${TABLE}.log;
+  CSV_DIALECT="${TABLE}_CSV_DIALECT";
+  echo $(TIMESTAMP)"Ingest table contributions into ${TABLE} -> ${LOG}";
+  ../tools/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${!CSV_DIALECT} ${VERBOSE_OPT} ${DEBUG_OPT} --url=${URL} >& ${LOG};
   if [ $? -ne 0 ] ; then
     echo $(TIMESTAMP)FAILED;
     exit 1;

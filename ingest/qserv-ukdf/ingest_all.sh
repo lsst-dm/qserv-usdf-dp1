@@ -6,12 +6,12 @@ function TIMESTAMP {
 
 BASE_DIR=$(dirname "$0")
 if [ -z "$BASE_DIR" ] || [ "$0" = "bash" ]; then
-    >&2 echo "error: variable 'BASE_DIR' is not defined"
-    return 1
+    >&2 echo "error: variable 'BASE_DIR' is not defined";
+    return 1;
 fi
 BASE_DIR=$(readlink -e "$BASE_DIR")
 if [ ! -d "$BASE_DIR" ]; then
-    >&2 echo "error: path 'BASE_DIR' is not a valid directory"a;
+    >&2 echo "error: path 'BASE_DIR' is not a valid directory";
     return 1;
 fi
 LOG_DIR=${BASE_DIR}/logs
@@ -123,7 +123,7 @@ done
 
 APP=create-table-index
 for TABLE in ${ALL_TABLES}; do
-  for idx in $(ls ../indexes/ | grep "_${TABLE}_" | grep json); do
+  for idx in $(ls ${INDEX_CONFIG} | grep "_${TABLE}_" | grep json); do
     LOG=${LOG_DIR}/${APP}-${idx::-5}.log;
     echo $(TIMESTAMP)"Create table index ${idx::-5} -> ${LOG}";
     ${TOOLS}/${APP}.py ${DATABASE_OPT} --table=${TABLE} ${VERBOSE_OPT} ${DEBUG_OPT} ${INDEX_CONFIG}/${idx} >& ${LOG};
