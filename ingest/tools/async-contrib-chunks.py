@@ -2,6 +2,7 @@
   
 import argparse
 import json as json
+import socket
 import sys
 import time
 
@@ -47,6 +48,20 @@ def parseArguments():
 
     return args
 
+host2ip = {}
+
+def translate_host2ip(host):
+    if host not in host2ip:
+        while True:
+            try:
+                host2ip[host] = socket.gethostbyname(host)
+                break
+            except:
+                pass
+
+    return host2ip[host]
+
+
 def get_chunk_locations(api, database, urls):
     chunks = set([parse_contrib_location(contrib_loc_str)["chunk"] for contrib_loc_str in urls])
     return api.locate_chunks(database, chunks)
@@ -80,6 +95,7 @@ if __name__ == '__main__':
             "overlap":              overlap,
             "url":                  url}
         location = chunk_locations[chunk]
+        location["http_addr"] = translate_host2ip(location["http_host_name"])
         contrib = api.async_contrib(location, contrib_descr)
         contrib_id = contrib["id"]
         contrib_entries[contrib_id] = {

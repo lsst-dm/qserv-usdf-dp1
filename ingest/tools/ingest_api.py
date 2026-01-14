@@ -304,16 +304,20 @@ class ingest_api:
 
     def async_contrib(self, location, contrib_descr):
         if self._debug:
-            _info("CONTRIB:   worker={}:{} descr={}".format(location["http_host_name"], location["http_port"], contrib_descr))
+            #_info("CONTRIB:   worker={}:{} descr={}".format(location["http_host_name"], location["http_port"], contrib_descr))
+            _info("CONTRIB:   worker={}:{} descr={}".format(location["http_addr"], location["http_port"], contrib_descr))
 
-        url = "http://{}:{}/ingest/file-async".format(location["http_host_name"], location["http_port"])
+        # url = "http://{}:{}/ingest/file-async".format(location["http_host_name"], location["http_port"])
+        url = "http://{}:{}/ingest/file-async".format(location["http_addr"], location["http_port"])
         return self._post(url, contrib_descr)["contrib"]
 
     def async_contrib_status(self, location, contrib_id):
         if self._debug:
-            _info("CONTRIB:   worker={}:{} id={}".format(location["http_host_name"], location["http_port"], contrib_id))
+            #_info("CONTRIB:   worker={}:{} id={}".format(location["http_host_name"], location["http_port"], contrib_id))
+            _info("CONTRIB:   worker={}:{} id={}".format(location["http_addr"], location["http_port"], contrib_id))
 
-        url = "http://{}:{}/ingest/file-async/{}".format(location["http_host_name"], location["http_port"], contrib_id)
+        #url = "http://{}:{}/ingest/file-async/{}".format(location["http_host_name"], location["http_port"], contrib_id)
+        url = "http://{}:{}/ingest/file-async/{}".format(location["http_addr"], location["http_port"], contrib_id)
         return self._get(url)["contrib"]
 
     def rebuild_row_counters(self,
